@@ -9,6 +9,9 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { VariantModule } from './variant/variant.module';
+import { CartModule } from './cart/cart.module';
+import { CartVariantModule } from './cart-variant/cart-variant.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -23,16 +26,19 @@ import { VariantModule } from './variant/variant.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    JwtModule.register({
+      global: true,
+      secret: process.env.SECRET_KEY,
+      // signOptions: { expiresIn: '36000s' },
+    }),
     ProductModule,
     FileModule,
     UserModule,
     AuthModule,
-    JwtModule.register({
-      global: true,
-      secret: process.env.SECRET_KEY,
-      signOptions: { expiresIn: '3600s' },
-    }),
     VariantModule,
+    CartModule,
+    CartVariantModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

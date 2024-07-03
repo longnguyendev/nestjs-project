@@ -1,14 +1,18 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { CartService } from 'src/cart/cart.service';
+import { plainToClass } from 'class-transformer';
 
 const saltOrRounds = 10;
 
@@ -17,6 +21,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject(forwardRef(() => CartService))
+    private cartService: CartService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -31,6 +37,8 @@ export class UserService {
       ...createUserDto,
       password: hash,
     });
+    const cart = await this.cartService.create();
+    newUser.cart = cart;
     return await this.userRepository.save(newUser);
   }
 
@@ -38,20 +46,28 @@ export class UserService {
     return await this.userRepository.find();
   }
 
-  async findOne(id: number): Promise<User | null> {
-    return await this.userRepository.findOneBy({ id });
+  async find(options: FindManyOptions<User>): Promise<User[]> {
+    return await this.userRepository.find(options);
+  }
+
+  async findOne(options: FindOneOptions<User>) {
+    return await this.userRepository.findOne(options);
   }
   async findOneByEmail(email: string): Promise<User | null> {
     return await this.userRepository.findOneBy({ email });
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne({
+      where: { id },
+    });
     if (!user) {
       throw new NotFoundException();
     }
     const data = { ...user, ...updateUserDto };
-    return await this.userRepository.save(data);
+    const result = await this.userRepository.save(data);
+    //sync with class-transformer
+    return plainToClass(User, result);
   }
 
   async remove(id: number) {

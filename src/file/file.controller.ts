@@ -12,7 +12,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { FileService } from './file.service';
-import { File } from './entities/file.entity';
 
 @Controller('file')
 export class FileController {
@@ -54,12 +53,12 @@ export class FileController {
   }
 
   @Get()
-  async findAll(): Promise<File[]> {
+  async findAll() {
     return await this.fileService.findAll();
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<File | null> {
+  async findOne(@Param('id') id: string) {
     return await this.fileService.findOne(+id);
   }
 }

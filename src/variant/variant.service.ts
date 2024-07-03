@@ -20,14 +20,14 @@ export class VariantService {
   async create(
     createVariantDto: CreateVariantDto,
     createFilesDto: CreateFileDto[],
-  ) {
+  ): Promise<Variant> {
+    console.log(createVariantDto);
     const product = await this.productService.findOne(
       createVariantDto.productId,
     );
     if (!product) {
       throw new NotFoundException('product not found');
     }
-
     const files = await Promise.all(
       createFilesDto.map(async (fileDto) => {
         return this.fileService.create(fileDto);
@@ -36,7 +36,6 @@ export class VariantService {
     const variant = this.variantRepository.create(createVariantDto);
     product.variants.push(variant);
     variant.images = files;
-    this.productService.update(product.id, product);
     return await this.variantRepository.save(variant);
   }
 
@@ -48,12 +47,16 @@ export class VariantService {
     return `This action returns a #${id} variant`;
   }
 
-  update(id: number, updateVariantDto: UpdateVariantDto) {
-    const variant = this.variantRepository.findOneBy({ id });
+  async update(
+    id: number,
+    updateVariantDto: UpdateVariantDto,
+  ): Promise<Variant> {
+    const variant = await this.variantRepository.findOneBy({ id });
     if (!variant) {
       throw new NotFoundException('variant not found');
     }
-    return this.variantRepository.save({ ...variant, ...updateVariantDto });
+    const data = { ...variant, ...updateVariantDto };
+    return await this.variantRepository.save(data);
   }
 
   remove(id: number) {

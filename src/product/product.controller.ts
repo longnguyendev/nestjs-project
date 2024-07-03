@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   BadRequestException,
   UploadedFile,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -20,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}

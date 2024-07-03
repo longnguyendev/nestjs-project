@@ -1,6 +1,7 @@
 import { Exclude, Expose } from 'class-transformer';
 import { BaseEntity } from 'src/base/entities/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Cart } from 'src/cart/entities/cart.entity';
+import { Column, Entity, OneToOne } from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
@@ -19,6 +20,9 @@ export class User extends BaseEntity {
   @Column()
   @Exclude()
   password: string;
+
+  @OneToOne(() => Cart, (cart) => cart.user) // specify inverse side as a second parameter
+  cart: Cart;
 
   @Expose()
   get fullName(): string {
